@@ -4,7 +4,7 @@ import { Badge } from './ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
-export function ProductList({ products, onUpdate, showActions, onAddToCart }) {
+export function ProductList({ products, onUpdate, showActions, onAddToCart, onEdit }) {
   const handleDelete = (productId) => {
     const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
     const filtered = allProducts.filter((p) => p.id !== productId);
@@ -13,7 +13,11 @@ export function ProductList({ products, onUpdate, showActions, onAddToCart }) {
   };
 
   const discount = (product) => {
-    return Math.round(((product.mrp - product.price) / product.mrp) * 100);
+    // Only use an explicitly provided discount value (no automatic generation)
+    if (product.discount !== undefined && product.discount !== null && product.discount !== '') {
+      return Math.round(Number(product.discount) || 0);
+    }
+    return 0;
   };
 
   if (products.length === 0) {
@@ -76,7 +80,7 @@ export function ProductList({ products, onUpdate, showActions, onAddToCart }) {
           <CardFooter className="pt-4 gap-2">
             {showActions ? (
               <>
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button variant="outline" size="sm" className="flex-1" onClick={() => onEdit && onEdit(product)}>
                   <Edit className="size-4 mr-2" />
                   Edit
                 </Button>

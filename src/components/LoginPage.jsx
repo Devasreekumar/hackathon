@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocale } from '../contexts/LocaleContext';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -13,6 +14,7 @@ export function LoginPage({ onSwitchToRegister }) {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { t } = useLocale();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +41,7 @@ export function LoginPage({ onSwitchToRegister }) {
           </div>
           <CardTitle className="text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your account to continue
+            {t('loginTitle')}
           </CardDescription>
         </CardHeader>
 
@@ -52,11 +54,11 @@ export function LoginPage({ onSwitchToRegister }) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -64,11 +66,11 @@ export function LoginPage({ onSwitchToRegister }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder={t('password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -78,17 +80,16 @@ export function LoginPage({ onSwitchToRegister }) {
 
           <CardFooter className="flex flex-col space-y-2">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
+              {loading ? t('signingIn') : t('signIn')}
             </Button>
 
             <p className="text-center">
-              Don't have an account?{' '}
-              <button
+              {t('dontHaveAccount')}{' '} <button
                 type="button"
                 onClick={onSwitchToRegister}
                 className="text-indigo-600 hover:underline dark:text-indigo-400"
               >
-                Register here
+                {t('registerHere')}
               </button>
             </p>
           </CardFooter>

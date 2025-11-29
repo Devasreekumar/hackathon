@@ -13,6 +13,7 @@ import { useAuth } from '../contexts/AuthContext';
 export function ArtisanDashboard() {
   const { user } = useAuth();
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [editProduct, setEditProduct] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [salesPeriod, setSalesPeriod] = useState('daily');
@@ -125,12 +126,12 @@ export function ArtisanDashboard() {
           <TabsContent value="products" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-gray-900 dark:text-white">Product Catalog</h2>
-              <Button onClick={() => setShowAddProduct(true)}>
+              <Button onClick={() => { setEditProduct(null); setShowAddProduct(true); }}>
                 <Package className="size-4 mr-2" />
                 Add New Product
               </Button>
             </div>
-            <ProductList products={products} onUpdate={handleProductAdded} showActions />
+            <ProductList products={products} onUpdate={handleProductAdded} showActions onEdit={(p) => { setEditProduct(p); setShowAddProduct(true); }} />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-4">
@@ -142,8 +143,9 @@ export function ArtisanDashboard() {
 
       <AddProductDialog
         open={showAddProduct}
-        onClose={() => setShowAddProduct(false)}
-        onProductAdded={handleProductAdded}
+        initialProduct={editProduct}
+        onClose={() => { setShowAddProduct(false); setEditProduct(null); }}
+        onProductAdded={() => { handleProductAdded(); setEditProduct(null); }}
       />
     </DashboardLayout>
   );

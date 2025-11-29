@@ -9,8 +9,20 @@ import { Input } from './ui/input';
 import { Alert, AlertDescription } from './ui/alert';
 import { Users, Package, ShoppingCart, AlertTriangle, Search, Ban, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { useLocale } from '../contexts/LocaleContext';
 
 export function AdminDashboard() {
+  const { t } = useLocale();
+
+  // Safe Parse Helper
+  const safeParse = (key) => {
+    try {
+      return JSON.parse(localStorage.getItem(key)) || [];
+    } catch {
+      return [];
+    }
+  };
+
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -22,32 +34,29 @@ export function AdminDashboard() {
   }, []);
 
   const loadData = () => {
-    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-    const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const allExhibitions = JSON.parse(localStorage.getItem('exhibitions') || '[]');
-
-    setUsers(allUsers);
-    setProducts(allProducts);
-    setOrders(allOrders);
-    setExhibitions(allExhibitions);
+    setUsers(safeParse('users'));
+    setProducts(safeParse('products'));
+    setOrders(safeParse('orders'));
+    setExhibitions(safeParse('exhibitions'));
   };
 
   const toggleBlockUser = (userId, currentStatus) => {
-    const allUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    const updated = allUsers.map((u) => (u.id === userId ? { ...u, isBlocked: !currentStatus } : u));
+    const updated = users.map(u =>
+      u.id === userId ? { ...u, isBlocked: !currentStatus } : u
+    );
+
     localStorage.setItem('users', JSON.stringify(updated));
-    
-    toast.success(currentStatus ? 'User unblocked successfully' : 'User blocked for suspicious activity');
+    toast.success(currentStatus ? 'User unblocked' : 'User blocked');
     loadData();
   };
 
   const deleteProduct = (productId) => {
-    const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-    const filtered = allProducts.filter((p) => p.id !== productId);
-    localStorage.setItem('products', JSON.stringify(filtered));
-    
-    toast.success('Product removed successfully');
+
+    if (!confirm('Are you sure you want to delete this product?')) return;
+
+    const updated = products.filter(p => p.id !== productId);
+    localStorage.setItem('products', JSON.stringify(updated));
+    toast.success('Product deleted');
     loadData();
   };
 
@@ -56,65 +65,29 @@ export function AdminDashboard() {
     u.email?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total || 0), 0);
   const blockedUsers = users.filter(u => u.isBlocked).length;
 
   return (
     <DashboardLayout title="Admin Dashboard">
       <div className="space-y-6">
-        {/* Stats Overview */}
+
+        {/* Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>Total Users</CardTitle>
-              <Users className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">{users.length}</div>
-              <p className="text-muted-foreground">Registered users</p>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>Total Products</CardTitle>
-              <Package className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">{products.length}</div>
-              <p className="text-muted-foreground">Listed products</p>
-            </CardContent>
-          </Card>
+          <Stat title={t('totalUsers')} value={users.length} icon={<Users />} />
+          <Stat title={t('totalProducts')} value={products.length} icon={<Package />} />
+          <Stat title={t('totalOrders')} value={orders.length} icon={<ShoppingCart />} />
+          <Stat title={t('blockedUsers')} value={blockedUsers} icon={<AlertTriangle />} />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>Total Orders</CardTitle>
-              <ShoppingCart className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">{orders.length}</div>
-              <p className="text-muted-foreground">All time</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle>Blocked Users</CardTitle>
-              <AlertTriangle className="size-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">{blockedUsers}</div>
-              <p className="text-muted-foreground">Suspicious activity</p>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Revenue Card */}
-        <Card className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white border-0">
+        {/* Revenue */}
+        <Card className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-0">
           <CardHeader>
-            <CardTitle>Platform Revenue</CardTitle>
-            <CardDescription className="text-indigo-100">
-              Total revenue generated across all transactions
+            <CardTitle>{t('revenue')}</CardTitle>
+            <CardDescription className="text-indigo-200">
+              {t('totalIncome')}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -122,211 +95,161 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="users" className="space-y-4">
+        {/* Tabs */}
+        <Tabs defaultValue="users">
+
           <TabsList>
-            <TabsTrigger value="users">User Management</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="users">{t('users')}</TabsTrigger>
+            <TabsTrigger value="products">{t('products')}</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="exhibitions">Exhibitions</TabsTrigger>
+            <TabsTrigger value="exhibitions">{t('exhibitions')}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users" className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          {/* USERS */}
+          <TabsContent value="users">
+            <div className="flex gap-4 mb-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search users..."
+                  placeholder={t('searchUsers')}
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
 
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredUsers.map((user) => (
-                        <TableRow key={user.id}>
-                          <TableCell>{user.name}</TableCell>
-                          <TableCell>{user.email}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{user.role}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            {user.isBlocked ? (
-                              <Badge variant="destructive">
-                                <Ban className="size-3 mr-1" />
-                                Blocked
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                                <CheckCircle className="size-3 mr-1" />
-                                Active
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant={user.isBlocked ? 'outline' : 'destructive'}
-                              onClick={() => toggleBlockUser(user.id, user.isBlocked)}
-                            >
-                              {user.isBlocked ? 'Unblock' : 'Block User'}
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+            <AdminTable
+              headers={[t('name'), t('email'), t('role'), t('status'), t('actions')]}
+              empty={t('noUsersFound')}
+              data={filteredUsers.map(u => ([
+                u.name,
+                u.email,
+                <Badge key="r" variant="outline">{u.role}</Badge>,
+                u.isBlocked
+                  ? <Badge key="b" variant="destructive"><Ban size={12}/> {t('blocked')}</Badge>
+                  : <Badge key="a" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><CheckCircle size={12}/> {t('active')}</Badge>,
+                <Button key="btn" size="sm" variant={u.isBlocked?'outline':'destructive'}
+                  onClick={() => toggleBlockUser(u.id, u.isBlocked)}>
+                  {u.isBlocked ? t('unblock') : t('block')}
+                </Button>
+              ]))}
+            />
           </TabsContent>
 
-          <TabsContent value="products" className="space-y-4">
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Product Name</TableHead>
-                        <TableHead>Artisan</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Price</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {products.map((product) => (
-                        <TableRow key={product.id}>
-                          <TableCell>{product.name}</TableCell>
-                          <TableCell>{product.artisanName}</TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{product.category}</Badge>
-                          </TableCell>
-                          <TableCell>₹{product.price.toLocaleString()}</TableCell>
-                          <TableCell>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => deleteProduct(product.id)}
-                            >
-                              Remove
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+          {/* PRODUCTS */}
+          <TabsContent value="products">
+            <AdminTable
+              headers={[t('name'), t('artisan'), t('category'), t('price'), t('actions')]}
+              empty={t('noProductsAvailable')}
+              data={products.map(p => ([
+                p.name,
+                p.artisanName,
+                <Badge key="c" variant="secondary">{p.category}</Badge>,
+                `₹${Number(p.price).toLocaleString()}`,
+                <Button key="d" size="sm" variant="destructive"
+                  onClick={() => deleteProduct(p.id)}>
+                  {t('delete')}
+                </Button>
+              ]))}
+            />
           </TabsContent>
 
-          <TabsContent value="orders" className="space-y-4">
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Order ID</TableHead>
-                        <TableHead>Customer</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead>Payment</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Date</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {orders.map((order) => (
-                        <TableRow key={order.id}>
-                          <TableCell className="font-mono">#{order.id.slice(0, 8)}</TableCell>
-                          <TableCell>{order.customerName}</TableCell>
-                          <TableCell>₹{order.total.toLocaleString()}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">{order.paymentMethod}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge>{order.status}</Badge>
-                          </TableCell>
-                          <TableCell>
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+          {/* ORDERS */}
+          <TabsContent value="orders">
+            <AdminTable
+              headers={[t('order'), t('customer'), t('total'), t('paymentMethod'), t('status'), 'Date']}
+              empty={t('noOrdersYet')}
+              data={orders.map(o => ([
+                `#${o.id?.slice(0,8)}`,
+                o.customerName,
+                `₹${Number(o.total).toLocaleString()}`,
+                <Badge key="p" variant="outline">{o.paymentMethod}</Badge>,
+                <Badge key="s">{o.status}</Badge>,
+                new Date(o.createdAt).toLocaleDateString()
+              ]))}
+            />
           </TabsContent>
 
-          <TabsContent value="exhibitions" className="space-y-4">
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Exhibition Name</TableHead>
-                        <TableHead>Consultant</TableHead>
-                        <TableHead>Location</TableHead>
-                        <TableHead>Start Date</TableHead>
-                        <TableHead>End Date</TableHead>
-                        <TableHead>Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {exhibitions.map((exhibition) => (
-                        <TableRow key={exhibition.id}>
-                          <TableCell>{exhibition.name}</TableCell>
-                          <TableCell>{exhibition.consultantName}</TableCell>
-                          <TableCell>{exhibition.location}</TableCell>
-                          <TableCell>
-                            {new Date(exhibition.startDate).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            {new Date(exhibition.endDate).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <Badge>{exhibition.status}</Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
+          {/* EXHIBITIONS */}
+          <TabsContent value="exhibitions">
+            <AdminTable
+              headers={[t('name'), t('consultant'), t('location'), t('start'), t('end'), t('status')]}
+              empty={t('noExhibitions')}
+              data={exhibitions.map(e => ([
+                e.name,
+                e.consultantName,
+                e.location,
+                new Date(e.startDate).toLocaleDateString(),
+                new Date(e.endDate).toLocaleDateString(),
+                <Badge key="st">{e.status}</Badge>
+              ]))}
+            />
           </TabsContent>
+
         </Tabs>
 
-        {/* Suspicious Activity Alert */}
+        {/* ALERT */}
         {blockedUsers > 0 && (
           <Alert variant="destructive">
             <AlertTriangle className="size-4" />
             <AlertDescription>
-              {blockedUsers} user{blockedUsers > 1 ? 's have' : ' has'} been blocked due to suspicious activity.
-              Please review the user management section.
+              {blockedUsers} {t('suspiciousActivity')}
             </AlertDescription>
           </Alert>
         )}
+
       </div>
     </DashboardLayout>
+  );
+}
+
+
+// ✅ REUSABLE COMPONENTS
+
+function Stat({ title, value, icon }) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row justify-between items-center pb-2">
+        <CardTitle>{title}</CardTitle>
+        {icon}
+      </CardHeader>
+      <CardContent>
+        <div>{value}</div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AdminTable({ headers, data, empty }) {
+  return (
+    <Card>
+      <CardContent className="p-0">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {headers.map(h => <TableHead key={h}>{h}</TableHead>)}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={headers.length} className="text-center text-muted-foreground">
+                    {empty}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                data.map((row, i) => (
+                  <TableRow key={i}>
+                    {row.map((cell, j) => <TableCell key={j}>{cell}</TableCell>)}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

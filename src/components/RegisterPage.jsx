@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocale } from '../contexts/LocaleContext';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -12,10 +13,11 @@ export function RegisterPage({ onSwitchToLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [role, setRole] = useState('customer'); // plain string for JSX
+  const [role, setRole] = useState('customer');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const { t } = useLocale();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -42,7 +44,7 @@ export function RegisterPage({ onSwitchToLogin }) {
           </div>
           <CardTitle className="text-center">Create an Account</CardTitle>
           <CardDescription className="text-center">
-            Register to get started with our platform
+            {t('registerDescription')}
           </CardDescription>
         </CardHeader>
 
@@ -55,11 +57,11 @@ export function RegisterPage({ onSwitchToLogin }) {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">{t('fullName')}</Label>
               <Input
                 id="name"
                 type="text"
-                placeholder="Enter your full name"
+                placeholder={t('fullName')}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -67,11 +69,11 @@ export function RegisterPage({ onSwitchToLogin }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -79,11 +81,11 @@ export function RegisterPage({ onSwitchToLogin }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('password')}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Create a password"
+                placeholder={t('password')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -91,10 +93,10 @@ export function RegisterPage({ onSwitchToLogin }) {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="role">I am a</Label>
+              <Label htmlFor="role">{t('selectRole')}</Label>
               <Select value={role} onValueChange={(value) => setRole(value)}>
                 <SelectTrigger id="role">
-                  <SelectValue placeholder="Select your role" />
+                  <SelectValue placeholder={t('selectRole')} />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="customer">Customer</SelectItem>
@@ -108,17 +110,17 @@ export function RegisterPage({ onSwitchToLogin }) {
 
           <CardFooter className="flex flex-col space-y-2">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? 'Creating account...' : t('createAccount')}
             </Button>
 
             <p className="text-center">
-              Already have an account?{' '}
+              {t('alreadyHaveAccount')}{' '}
               <button
                 type="button"
                 onClick={onSwitchToLogin}
                 className="text-indigo-600 hover:underline dark:text-indigo-400"
               >
-                Sign in here
+                {t('signInHere')}
               </button>
             </p>
           </CardFooter>

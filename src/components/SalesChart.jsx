@@ -110,11 +110,11 @@ export function SalesChart({ orders, period }) {
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: 'var(--background)',
-              border: '1px solid var(--border)',
+              backgroundColor: 'var(--color-background)',
+              border: '1px solid var(--color-border)',
               borderRadius: '8px',
             }}
-            labelStyle={{ color: 'var(--foreground)' }}
+            labelStyle={{ color: 'var(--color-foreground)' }}
           />
           <Legend />
           <Bar dataKey="sales" fill="#6366f1" name="Revenue (₹)" radius={[8, 8, 0, 0]} />

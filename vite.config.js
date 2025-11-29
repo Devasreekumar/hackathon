@@ -4,6 +4,10 @@
   import path from 'path';
 
   export default defineConfig({
+    // Apply a base only for production builds so the dev server still runs at '/'
+    // This ensures the app works locally at http://localhost:3000 while
+    // production assets will use '/hackathon/' when deployed to GitHub Pages.
+    base: process.env.NODE_ENV === 'production' ? '/hackathon/' : '/',
     plugins: [react()],
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],

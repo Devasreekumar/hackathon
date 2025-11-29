@@ -1,7 +1,8 @@
 import React from 'react';
-import { Routes, Route, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { LocaleProvider } from './contexts/LocaleContext';
 import { HomePage } from './components/HomePage';
 import ExhibitionsPage from './components/ExhibitionsPage';
 import { LoginPage } from './components/LoginPage';
@@ -50,17 +51,23 @@ function AppContent() {
           }
         })()
       } />
+      {/* Redirect any unmatched paths (e.g. /register when already signed in) back to dashboard */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <AppContent />
-        <Toaster />
-      </AuthProvider>
-    </ThemeProvider>
+    <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-200">
+      <ThemeProvider>
+        <LocaleProvider>
+          <AuthProvider>
+            <AppContent />
+            <Toaster />
+          </AuthProvider>
+        </LocaleProvider>
+      </ThemeProvider>
+    </div>
   );
 }

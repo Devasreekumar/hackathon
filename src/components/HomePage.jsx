@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Calendar } from './ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { useTheme } from '../contexts/ThemeContext';
+import { useLocale } from '../contexts/LocaleContext';
 import { 
   ShoppingBag, 
   Calendar as CalendarIcon, 
@@ -24,6 +25,7 @@ import api from '../utils/api';
 
 export function HomePage({ onNavigateToLogin, onNavigateToRegister, onNavigateToExhibitions }) {
   const { theme, toggleTheme } = useTheme();
+  const { locale, setLocale, t } = useLocale();
   const [products, setProducts] = useState([]);
   const [exhibitions, setExhibitions] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -126,17 +128,26 @@ export function HomePage({ onNavigateToLogin, onNavigateToRegister, onNavigateTo
               <div className="bg-gradient-to-r from-orange-500 to-red-600 p-2 rounded-lg">
                 <ShoppingBag className="size-6 text-white" />
               </div>
-              <span className="text-gray-900 dark:text-white">Tribal Heritage</span>
+              <span className="text-gray-900 dark:text-white">{t('siteTitle')}</span>
             </div>
             <div className="flex items-center gap-3">
+              <select 
+                value={locale} 
+                onChange={(e) => setLocale(e.target.value)} 
+                style={{ colorScheme: theme === 'dark' ? 'dark' : 'light' }}
+                className="rounded-md px-2 py-1 text-sm border bg-white text-black dark:bg-gray-800 dark:text-white dark:border-gray-700 cursor-pointer"
+              >
+                <option value="en" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#fff', color: theme === 'dark' ? '#fff' : '#000' }}>EN</option>
+                <option value="hi" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#fff', color: theme === 'dark' ? '#fff' : '#000' }}>HI</option>
+              </select>
               <Button variant="ghost" size="icon" onClick={toggleTheme}>
                 {theme === 'light' ? <Moon className="size-5" /> : <Sun className="size-5" />}
               </Button>
               <Button variant="outline" onClick={onNavigateToLogin}>
-                Sign In
+                {t('signIn')}
               </Button>
               <Button onClick={onNavigateToRegister}>
-                Get Started
+                {t('getStarted')}
               </Button>
             </div>
           </div>

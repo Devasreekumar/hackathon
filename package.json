@@ -48,13 +48,19 @@
             "tailwindcss": "*",
             "vaul": "^1.1.2"
       },
-      "devDependencies": {
-            "@types/node": "^20.10.0",
-            "@vitejs/plugin-react-swc": "^3.10.2",
-            "vite": "6.3.5"
-      },
-      "scripts": {
-            "dev": "vite",
-            "build": "vite build"
-      }
+        "devDependencies": {
+                  "@types/node": "^20.10.0",
+                  "@vitejs/plugin-react-swc": "^3.10.2",
+                  "vite": "^6.4.1",
+                  "gh-pages": "^5.0.0"
+            },
+            "homepage": "https://github.com/Devasreekumar/hackathon.git",
+            "scripts": {
+                  "lint": "eslint .",
+                  "dev": "vite",
+                  "build": "vite build",
+                  "preview": "vite preview",
+                  "predeploy": "npm run build",
+                  "deploy": "gh-pages -d build"
+            }
 }
