@@ -14,14 +14,31 @@ export function OrdersTable({ orders, isArtisan }) {
     filter === 'all' ? orders : orders.filter((o) => o.status === filter);
 
   const updateOrderStatus = (orderId, newStatus) => {
+    // Try to update in regular orders first
     const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const updated = allOrders.map((o) =>
-      o.id === orderId ? { ...o, status: newStatus } : o
-    );
+    let updated = allOrders.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
 
-    localStorage.setItem('orders', JSON.stringify(updated));
-    toast.success(`Order status updated to ${newStatus}`);
-    window.location.reload();
+    const foundInOrders = allOrders.some((o) => o.id === orderId);
+
+    if (foundInOrders) {
+      localStorage.setItem('orders', JSON.stringify(updated));
+      toast.success(`Order status updated to ${newStatus}`);
+      window.location.reload();
+      return;
+    }
+
+    // Otherwise try bulk orders
+    const allBulk = JSON.parse(localStorage.getItem('bulkOrders') || '[]');
+    const foundInBulk = allBulk.some((o) => o.id === orderId);
+    if (foundInBulk) {
+      const updatedBulk = allBulk.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
+      localStorage.setItem('bulkOrders', JSON.stringify(updatedBulk));
+      toast.success(`Bulk order status updated to ${newStatus}`);
+      window.location.reload();
+      return;
+    }
+
+    toast.error('Order not found');
   };
 
   const getStatusColor = (status) => {
@@ -83,11 +100,15 @@ export function OrdersTable({ orders, isArtisan }) {
                 {filteredOrders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-mono">#{order.id.slice(0, 8)}</TableCell>
-                    <TableCell>{order.customerName}</TableCell>
+                    <TableCell>{order.customerName || order.consultantName || order.consultant || '—'}</TableCell>
                     <TableCell>{order.items?.length || 0} item(s)</TableCell>
                     <TableCell>₹{order.total.toLocaleString()}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{order.paymentMethod}</Badge>
+                      {order.paymentMethod ? (
+                        <Badge variant="outline">{order.paymentMethod}</Badge>
+                      ) : (
+                        <span className="text-muted-foreground">{order.purpose ? order.purpose : '—'}</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(order.status)}>

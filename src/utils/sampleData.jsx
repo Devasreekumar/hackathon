@@ -41,8 +41,22 @@ export function initializeSampleData() {
     },
   ];
 
-  // ✅ EMPTY Product List
-  const sampleProducts = [];
+  // Sample Products — include one artisan product for testing orders
+  const sampleProducts = [
+    {
+      id: 'p1',
+      artisanId: '2',
+      artisanName: 'Ramesh Kumar',
+      name: 'Handwoven Basket',
+      price: 500,
+      mrp: 700,
+      discount: 28.57,
+      category: 'handicrafts',
+      description: 'Handwoven basket made from natural fibers',
+      imageUrl: '',
+      createdAt: new Date().toISOString(),
+    },
+  ];
 
   // Sample Exhibitions (kept as-is)
   const sampleExhibitions = [
@@ -90,13 +104,57 @@ export function initializeSampleData() {
     },
   ];
 
-  // Sample Orders (kept as-is)
-  const sampleOrders = [];
+  // Sample Orders — a customer purchase that includes the artisan product above
+  const sampleOrders = [
+    {
+      id: 'o1',
+      customerId: '3',
+      customerName: 'Priya Sharma',
+      items: [
+        {
+          id: 'p1',
+          name: 'Handwoven Basket',
+          quantity: 2,
+          price: 500,
+          total: 1000,
+        },
+      ],
+      total: 1000,
+      status: 'pending',
+      paymentMethod: 'cod',
+      address: '123 Sample Street',
+      phone: '9999999999',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  // Sample Bulk Orders — placed by consultant for exhibition (will be stored under 'bulkOrders')
+  const sampleBulkOrders = [
+    {
+      id: 'b1',
+      consultantId: '4',
+      consultantName: 'Amit Verma',
+      items: [
+        {
+          productId: 'p1',
+          productName: 'Handwoven Basket',
+          quantity: 10,
+          price: 450,
+          total: 4500,
+        },
+      ],
+      total: 4500,
+      purpose: 'Exhibition inventory',
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+    },
+  ];
 
   // Save to localStorage
   localStorage.setItem('users', JSON.stringify(sampleUsers));
   localStorage.setItem('products', JSON.stringify(sampleProducts));
   localStorage.setItem('exhibitions', JSON.stringify(sampleExhibitions));
   localStorage.setItem('orders', JSON.stringify(sampleOrders));
+  localStorage.setItem('bulkOrders', JSON.stringify(sampleBulkOrders));
   localStorage.setItem('dataInitialized', 'true');
 }

@@ -7,11 +7,13 @@ import { Badge } from './ui/badge';
 import { CreateExhibitionDialog } from './CreateExhibitionDialog';
 import { BulkOrderDialog } from './BulkOrderDialog';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, Package, ShoppingBag, Users } from 'lucide-react';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 export function ConsultantDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [exhibitions, setExhibitions] = useState([]);
   const [bulkOrders, setBulkOrders] = useState([]);
   const [showCreateExhibition, setShowCreateExhibition] = useState(false);
@@ -147,7 +149,7 @@ export function ConsultantDashboard() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full">
+                      <Button variant="outline" className="w-full" onClick={() => navigate(`/exhibitions#${exhibition.id}`)}>
                         View Details
                       </Button>
                     </CardFooter>

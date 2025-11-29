@@ -26,10 +26,21 @@ export function ArtisanDashboard() {
 
     // Load orders for artisan's products
     const allOrders = JSON.parse(localStorage.getItem('orders') || '[]');
-    const myOrders = allOrders.filter((o) =>
-      myProducts.some((p) => o.items?.some((item) => item.productId === p.id))
-    );
-    setOrders(myOrders);
+    // Bulk orders (from exhibitions / consultants) are stored separately
+    const allBulk = JSON.parse(localStorage.getItem('bulkOrders') || '[]');
+
+    // Helper to determine whether an order includes any of this artisan's products.
+    const includesMyProduct = (order) => {
+      return myProducts.some((p) =>
+        order.items?.some((item) => item.productId === p.id || item.id === p.id)
+      );
+    };
+
+    const myOrders = allOrders.filter((o) => includesMyProduct(o));
+    const myBulkOrders = allBulk.filter((o) => includesMyProduct(o));
+
+    // Merge both order sets so artisan sees purchases from customers and bulk/consultant orders
+    setOrders([...myOrders, ...myBulkOrders]);
   }, [user]);
 
   const handleProductAdded = () => {
