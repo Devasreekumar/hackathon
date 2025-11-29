@@ -1,4 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from './ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/card';
 import { Button } from './ui/button';
 import { MapPin, Calendar as CalendarIcon, Clock } from 'lucide-react';
@@ -6,7 +11,10 @@ import { toast } from 'sonner';
 import api from '../utils/api';
 
 export default function ExhibitionsPage({ onBack }) {
+  const location = useLocation();
   const [exhibitions, setExhibitions] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -16,6 +24,15 @@ export default function ExhibitionsPage({ onBack }) {
       const normalized = (data || []).map((d) => ({ ...(d || {}), id: d.id || d._id }));
       const sorted = normalized.slice().sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
       setExhibitions(sorted);
+      // if navigation requested opening a specific exhibition, open it after load
+      const requestedId = location?.state?.openExhibitionId || (location?.hash ? location.hash.replace('#', '') : null);
+      if (requestedId) {
+        const found = sorted.find((s) => String(s.id) === String(requestedId));
+        if (found) {
+          setSelected(found);
+          setDialogOpen(true);
+        }
+      }
     }).catch((err) => {
       console.warn('Error fetching exhibitions', err);
     });
@@ -74,13 +91,44 @@ export default function ExhibitionsPage({ onBack }) {
                   <div className="text-sm text-muted-foreground">Visitors: {ex.visitors || 0}</div>
                 </CardContent>
                 <CardFooter>
-                  <Button onClick={() => registerInterest(ex.id)}>Register Interest</Button>
+                  <div className="flex gap-2 w-full">
+                    <Button onClick={() => registerInterest(ex.id)}>Register Interest</Button>
+                    <Button variant="outline" onClick={() => { setSelected(ex); setDialogOpen(true); }}>
+                      View Details
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             ))}
           </div>
         )}
       </div>
+
+      <Dialog open={dialogOpen} onOpenChange={(open) => setDialogOpen(open)}>
+        <DialogContent>
+          {selected ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>{selected.name}</DialogTitle>
+              </DialogHeader>
+              <DialogDescription className="mt-2">{selected.description}</DialogDescription>
+
+              <div className="mt-4 space-y-2">
+                <div><strong>Location:</strong> {selected.location}</div>
+                <div><strong>Dates:</strong> {new Date(selected.startDate).toLocaleDateString()} - {new Date(selected.endDate).toLocaleDateString()}</div>
+                <div><strong>Visitors:</strong> {selected.visitors || 0}</div>
+                <div><strong>Products showcased:</strong> {selected.products?.length || 0}</div>
+              </div>
+
+              <DialogFooter>
+                <Button onClick={() => setDialogOpen(false)}>Close</Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <div>Loading...</div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -149,7 +149,11 @@ export function ConsultantDashboard() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button variant="outline" className="w-full" onClick={() => navigate(`/exhibitions#${exhibition.id}`)}>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => navigate('/exhibitions', { state: { openExhibitionId: exhibition.id } })}
+                      >
                         View Details
                       </Button>
                     </CardFooter>
