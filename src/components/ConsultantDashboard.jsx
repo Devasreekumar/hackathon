@@ -7,12 +7,14 @@ import { Badge } from './ui/badge';
 import { CreateExhibitionDialog } from './CreateExhibitionDialog';
 import { BulkOrderDialog } from './BulkOrderDialog';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocale } from '../contexts/LocaleContext';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Package, ShoppingBag, Users } from 'lucide-react';
 import { ImageWithFallback } from './fix/ImageWithFallback';
 
 export function ConsultantDashboard() {
   const { user } = useAuth();
+  const { t } = useLocale();
   const navigate = useNavigate();
   const [exhibitions, setExhibitions] = useState([]);
   const [bulkOrders, setBulkOrders] = useState([]);

@@ -51,6 +51,7 @@ function AppContent() {
           }
         })()
       } />
+      <Route path="/exhibitions" element={<ExhibitionsPage onBack={() => navigate('/')} />} />
       {/* Redirect any unmatched paths (e.g. /register when already signed in) back to dashboard */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

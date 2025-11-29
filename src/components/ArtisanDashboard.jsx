@@ -9,9 +9,11 @@ import { SalesChart } from './SalesChart';
 import { OrdersTable } from './OrdersTable';
 import { Package, DollarSign, ShoppingCart, TrendingUp } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocale } from '../contexts/LocaleContext';
 
 export function ArtisanDashboard() {
   const { user } = useAuth();
+  const { t } = useLocale();
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [products, setProducts] = useState([]);

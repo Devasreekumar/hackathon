@@ -9,11 +9,13 @@ import { ProductList } from './ProductList';
 import { OrdersTable } from './OrdersTable';
 import { CheckoutDialog } from './CheckoutDialog';
 import { useAuth } from '../contexts/AuthContext';
+import { useLocale } from '../contexts/LocaleContext';
 import { ShoppingCart, Search, Package } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function CustomerDashboard() {
   const { user } = useAuth();
+  const { t } = useLocale();
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [cart, setCart] = useState([]);
