@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './fix/ImageWithFallback';
 
 export function ProductList({ products, onUpdate, showActions, onAddToCart, onEdit }) {
   const handleDelete = (productId) => {

@@ -9,7 +9,7 @@ import { BulkOrderDialog } from './BulkOrderDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Package, ShoppingBag, Users } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './fix/ImageWithFallback';
 
 export function ConsultantDashboard() {
   const { user } = useAuth();

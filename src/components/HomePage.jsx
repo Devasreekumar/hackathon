@@ -19,7 +19,7 @@ import {
   ChevronRight,
   Quote
 } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { ImageWithFallback } from './fix/ImageWithFallback';
 import tribalPattern from '../assets/tribal-pattern.svg';
 import api from '../utils/api';
 

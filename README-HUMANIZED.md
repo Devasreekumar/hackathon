@@ -72,17 +72,5 @@ Notes & Troubleshooting
 - Native `<select>` dropdowns may look different across platforms and sometimes need extra styling, especially for dark mode. The app includes small in‑component styles to handle dark/background color for options.
 - Data in this demo is saved to `localStorage`. Clear localStorage or open a private window to reset sample data.
 
-How to contribute / extend
 
-- Add translations: update `src/contexts/LocaleContext.jsx` and add `t('yourKey')` to components.
-- Replace localStorage with an API backend: swap `utils/api.js` with real endpoints and adapt data loading hooks.
-- Improve dark mode: adjust CSS variables in `src/index.css` and add `dark:` Tailwind variants to components that need them.
 
-Questions / Next Steps
-
-If you'd like, I can:
-- Overwrite the existing `README.md` with this humanized version (I created `README-HUMANIZED.md` so you can preview first).
-- Commit the changes and open a PR for you.
-- Add more detailed contributor instructions or a demo account list.
-
-Tell me which of the above you'd like me to do next.
