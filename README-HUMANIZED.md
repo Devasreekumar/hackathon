@@ -4,8 +4,6 @@ Overview
 
 This is a small, friendly e‑commerce demo called "Tribal Heritage" that showcases handcrafted products, artisan profiles and exhibitions. It's built as a learning / demo project for exploring a modern frontend stack (React + Vite + Tailwind) and includes features you'll expect from a production admin and storefront: dashboards, product management, orders, authentication, theme switching (dark/light) and multilingual support (English and Hindi).
 
-<!-- redeploy-trigger: 2025-11-29T21:45:00+05:30 -->
-
 Why this project exists
 
 - To give artisans a simple, well‑designed place to show and sell their craft.
