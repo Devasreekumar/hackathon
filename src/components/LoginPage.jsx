@@ -13,13 +13,42 @@ export function LoginPage({ onSwitchToRegister }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [captchaQuestion, setCaptchaQuestion] = useState('');
+  const [captchaExpected, setCaptchaExpected] = useState('');
+  const [captchaValue, setCaptchaValue] = useState('');
   const { login } = useAuth();
   const { t } = useLocale();
+
+  // generate a small math captcha (fallback if no 3rd-party captcha configured)
+  const generateCaptcha = () => {
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
+    const ops = ['+', '-', '*'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    let q = `${a} ${op} ${b}`;
+    // evaluate
+    // eslint-disable-next-line no-eval
+    const expected = String(eval(q));
+    setCaptchaQuestion(q + ' = ?');
+    setCaptchaExpected(expected);
+    setCaptchaValue('');
+  };
+
+  // initialize captcha on first render
+  useState(() => { generateCaptcha(); return null; });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    // simple client-side captcha validation
+    if (String(captchaValue).trim() !== String(captchaExpected).trim()) {
+      setError('CAPTCHA answer is incorrect. Please try again.');
+      setLoading(false);
+      generateCaptcha();
+      return;
+    }
 
     try {
       await login(email, password);
@@ -75,6 +104,23 @@ export function LoginPage({ onSwitchToRegister }) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </div>
+
+            {/* Simple math CAPTCHA (client-side) */}
+            <div className="space-y-2">
+              <Label htmlFor="captcha">Captcha: solve</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  id="captcha"
+                  type="text"
+                  placeholder={captchaQuestion}
+                  value={captchaValue}
+                  onChange={(e) => setCaptchaValue(e.target.value)}
+                  required
+                />
+                <Button type="button" variant="ghost" onClick={generateCaptcha}>Refresh</Button>
+              </div>
+              <p className="text-sm text-muted-foreground">Enter the result of the expression shown in the placeholder.</p>
             </div>
           </CardContent>
 

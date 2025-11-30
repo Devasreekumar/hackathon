@@ -1,27 +1,32 @@
-import React, { useState } from 'react'
 
-const ERROR_IMG_SRC =
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODgiIGhlaWdodD0iODgiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgc3Ryb2tlPSIjMDAwIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBvcGFjaXR5PSIuMyIgZmlsbD0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIzLjciPjxyZWN0IHg9IjE2IiB5PSIxNiIgd2lkdGg9IjU2IiBoZWlnaHQ9IjU2IiByeD0iNiIvPjxwYXRoIGQ9Im0xNiA1OCAxNi0xOCAzMiAzMiIvPjxjaXJjbGUgY3g9IjUzIiBjeT0iMzUiIHI9IjciLz48L3N2Zz4KCg=='
+import React, { useState } from 'react';
 
-export function ImageWithFallback(props) {
-  const [didError, setDidError] = useState(false)
+export function ImageWithFallback({ src, alt = '', className = '', fallback, ...props }) {
+	const [errored, setErrored] = useState(false);
 
-  const handleError = () => {
-    setDidError(true)
-  }
+	const fallbackSrc = fallback || 'data:image/svg+xml;utf8,' + encodeURIComponent(
+		`<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400' viewBox='0 0 600 400' fill='none'>
+			<rect width='100%' height='100%' fill='%23f3f4f6'/>
+			<g fill='%239ca3af' font-family='Arial, Helvetica, sans-serif' font-size='20' text-anchor='middle'>
+				<text x='50%' y='50%' dy='-6'>Image not available</text>
+				<text x='50%' y='50%' dy='20' font-size='14'>Missing or failed to load</text>
+			</g>
+		</svg>`
+	);
 
-  const { src, alt, style, className, ...rest } = props
+	const handleError = () => setErrored(true);
 
-  return didError ? (
-    <div
-      className={`inline-block bg-gray-100 text-center align-middle ${className ?? ''}`}
-      style={style}
-    >
-      <div className="flex items-center justify-center w-full h-full">
-        <img src={ERROR_IMG_SRC} alt="Error loading image" {...rest} data-original-url={src} />
-      </div>
-    </div>
-  ) : (
-    <img src={src} alt={alt} className={className} style={style} {...rest} onError={handleError} />
-  )
+	return (
+		// eslint-disable-next-line jsx-a11y/alt-text
+		<img
+			src={errored ? fallbackSrc : (src || fallbackSrc)}
+			alt={alt}
+			className={className}
+			onError={handleError}
+			loading="lazy"
+			{...props}
+		/>
+	);
 }
+
+export default ImageWithFallback;

@@ -9,6 +9,7 @@ import { Input } from './ui/input';
 import { Alert, AlertDescription } from './ui/alert';
 import { Users, Package, ShoppingCart, AlertTriangle, Search, Ban, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import api from '../utils/api';
 import { useLocale } from '../contexts/LocaleContext';
 
 export function AdminDashboard() {
@@ -35,7 +36,15 @@ export function AdminDashboard() {
 
   const loadData = () => {
     setUsers(safeParse('users'));
-    setProducts(safeParse('products'));
+    // load products from backend
+    api.fetchProducts().then((data) => {
+      const normalized = (data || []).map(p => ({ ...(p||{}), id: p.id || p._id }));
+      setProducts(normalized);
+    }).catch((err) => {
+      console.error('Failed to fetch products from backend', err);
+      toast.error('Failed to load products from server');
+      setProducts([]);
+    });
     setOrders(safeParse('orders'));
     setExhibitions(safeParse('exhibitions'));
   };
@@ -51,13 +60,42 @@ export function AdminDashboard() {
   };
 
   const deleteProduct = (productId) => {
-
     if (!confirm('Are you sure you want to delete this product?')) return;
+    api.deleteProduct(productId).then(() => {
+      toast.success('Product deleted');
+      loadData();
+    }).catch((err) => {
+      console.error('Failed to delete product', err);
+      toast.error('Failed to delete product');
+    });
+  };
+  // Inline add product form state
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newProduct, setNewProduct] = useState({ name: '', price: '', description: '', image: '' });
 
-    const updated = products.filter(p => p.id !== productId);
-    localStorage.setItem('products', JSON.stringify(updated));
-    toast.success('Product deleted');
-    loadData();
+  const handleNewChange = (field, value) => setNewProduct((s) => ({ ...s, [field]: value }));
+
+  const submitNewProduct = async (e) => {
+    e && e.preventDefault();
+    if (!newProduct.name || !newProduct.price) {
+      toast.error('Please provide name and price');
+      return;
+    }
+    try {
+      await api.createProduct({
+        name: newProduct.name,
+        price: Number(newProduct.price),
+        description: newProduct.description,
+        image: newProduct.image,
+      });
+      toast.success('Product created');
+      setNewProduct({ name: '', price: '', description: '', image: '' });
+      setShowAddForm(false);
+      loadData();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to create product');
+    }
   };
 
   const filteredUsers = users.filter(u =>
@@ -139,6 +177,32 @@ export function AdminDashboard() {
 
           {/* PRODUCTS */}
           <TabsContent value="products">
+            <div className="flex items-center justify-between mb-4">
+              <div className="text-lg font-semibold">{t('products')}</div>
+              <div>
+                <Button size="sm" onClick={() => setShowAddForm((s) => !s)}>
+                  {showAddForm ? 'Cancel' : 'Add Product'}
+                </Button>
+              </div>
+            </div>
+
+            {showAddForm && (
+              <Card className="mb-4">
+                <CardContent>
+                  <form onSubmit={submitNewProduct} className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <Input placeholder="Name" value={newProduct.name} onChange={(e) => handleNewChange('name', e.target.value)} />
+                    <Input placeholder="Price" value={newProduct.price} onChange={(e) => handleNewChange('price', e.target.value)} />
+                    <Input placeholder="Image URL" value={newProduct.image} onChange={(e) => handleNewChange('image', e.target.value)} />
+                    <textarea placeholder="Description" value={newProduct.description} onChange={(e) => handleNewChange('description', e.target.value)} className="md:col-span-3 p-2 rounded border" />
+                    <div className="md:col-span-3 flex gap-2 justify-end">
+                      <Button variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
+                      <Button type="submit">Create Product</Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
             <AdminTable
               headers={[t('name'), t('artisan'), t('category'), t('price'), t('actions')]}
               empty={t('noProductsAvailable')}

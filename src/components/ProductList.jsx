@@ -3,13 +3,30 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Edit, Trash2 } from 'lucide-react';
 import { ImageWithFallback } from './fix/ImageWithFallback';
+import { deleteProduct as apiDeleteProduct } from '../utils/api';
 
 export function ProductList({ products, onUpdate, showActions, onAddToCart, onEdit }) {
-  const handleDelete = (productId) => {
-    const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-    const filtered = allProducts.filter((p) => p.id !== productId);
-    localStorage.setItem('products', JSON.stringify(filtered));
-    onUpdate && onUpdate();
+  const handleDelete = async (productId) => {
+    try {
+      // Try backend delete first
+      if (apiDeleteProduct) {
+        await apiDeleteProduct(productId);
+        onUpdate && onUpdate();
+        return;
+      }
+    } catch (err) {
+      console.error('Backend delete failed, falling back to localStorage delete', err);
+    }
+
+    // Fallback for legacy localStorage data
+    try {
+      const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
+      const filtered = allProducts.filter((p) => p.id !== productId);
+      localStorage.setItem('products', JSON.stringify(filtered));
+      onUpdate && onUpdate();
+    } catch (err) {
+      console.error('Failed to delete product locally', err);
+    }
   };
 
   const discount = (product) => {
@@ -38,7 +55,7 @@ export function ProductList({ products, onUpdate, showActions, onAddToCart, onEd
             <div className="aspect-square relative overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-800">
               <ImageWithFallback
                 src={
-                  product.imageUrl ||
+                  product.image || product.imageUrl ||
                   'https://images.unsplash.com/photo-1762628437902-315a5efb810c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYW5kbWFkZSUyMGNyYWZ0cyUyMGFydGlzYW58ZW58MXx8fHwxNzYzNjU5MTk0fDA&ixlib=rb-4.1.0&q=80&w=1080'
                 }
                 alt={product.name}
@@ -59,7 +76,7 @@ export function ProductList({ products, onUpdate, showActions, onAddToCart, onEd
             <div className="mt-4 space-y-2">
               <div className="flex items-center gap-2">
                 <span className="text-gray-900 dark:text-white">
-                  ₹{product.price.toLocaleString()}
+                  ₹{Number(product.price || 0).toLocaleString()}
                 </span>
                 {product.mrp > product.price && (
                   <span className="line-through text-muted-foreground">
@@ -80,7 +97,7 @@ export function ProductList({ products, onUpdate, showActions, onAddToCart, onEd
           <CardFooter className="pt-4 gap-2">
             {showActions ? (
               <>
-                <Button variant="outline" size="sm" className="flex-1" onClick={() => onEdit && onEdit(product)}>
+                <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => { console.log('Edit clicked', product); onEdit && onEdit(product); }}>
                   <Edit className="size-4 mr-2" />
                   Edit
                 </Button>
