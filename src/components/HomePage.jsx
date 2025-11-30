@@ -137,7 +137,7 @@ export function HomePage({ onNavigateToLogin, onNavigateToRegister, onNavigateTo
                 <option value="en" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#fff', color: theme === 'dark' ? '#fff' : '#000' }}>EN</option>
                 <option value="hi" style={{ backgroundColor: theme === 'dark' ? '#374151' : '#fff', color: theme === 'dark' ? '#fff' : '#000' }}>HI</option>
               </select>
-              <Button variant="ghost" size="icon" onClick={toggleTheme}>
+              <Button variant="ghost" size="icon" onClick={toggleTheme} className={`${theme === 'dark' ? 'text-yellow-400' : 'text-orange-600'}`}>
                 {theme === 'light' ? <Moon className="size-5" /> : <Sun className="size-5" />}
               </Button>
               <Button variant="outline" onClick={onNavigateToLogin}>

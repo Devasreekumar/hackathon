@@ -12,117 +12,142 @@ import { useAuth } from "../contexts/AuthContext";
 
 export function ArtisanDashboard() {
   const { user } = useAuth();
+
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
   const [salesPeriod, setSalesPeriod] = useState("daily");
 
-  // Load artisan products from localStorage
+  // ✅ LOAD PRODUCTS
   const loadProducts = () => {
-    try {
-      const allProducts = JSON.parse(localStorage.getItem("products") || "[]");
-      setProducts(allProducts);
-    } catch (err) {
-      console.error("Failed to load products:", err);
-      setProducts([]);
-    }
+    const all = JSON.parse(localStorage.getItem("products") || "[]");
+    const mine = all.filter(p => p.artisanId === user?.id);
+    setProducts(mine);
+  };
+
+  // ✅ LOAD ORDERS
+  const loadOrders = () => {
+    const allOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+    const myOrders = allOrders.filter(order =>
+      order.items?.some(item => products.some(p => p.id === item.productId))
+    );
+    setOrders(myOrders);
   };
 
   useEffect(() => {
+    if (!user) return;
     loadProducts();
-  }, []);
+  }, [user]);
 
-  const handleProductAdded = () => {
-    loadProducts(); // refresh dashboard after adding products
-  };
+  useEffect(() => {
+    loadOrders();
+  }, [products]);
 
-  const totalRevenue = orders.reduce((sum, order) => sum + (order.total || 0), 0);
+  const handleProductAdded = () => loadProducts();
+
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter((o) => o.status === "pending").length;
+  const pendingOrders = orders.filter(o => o.status === "pending").length;
 
   return (
     <DashboardLayout title="Artisan Dashboard">
+
       <div className="space-y-6">
-        {/* Stats Overview */}
+
+        {/* ✅ INFO CARDS */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {/* Revenue */}
+
           <Card>
-            <CardHeader className="flex items-center justify-between">
+            <CardHeader className="flex justify-between">
               <CardTitle>Total Revenue</CardTitle>
-              <DollarSign className="size-4 text-muted-foreground" />
+              <DollarSign className="size-4" />
             </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">₹{totalRevenue.toLocaleString()}</div>
-              <p className="text-muted-foreground">From all sales</p>
-            </CardContent>
+            <CardContent>₹{totalRevenue.toLocaleString()}</CardContent>
           </Card>
 
-          {/* Products */}
           <Card>
-            <CardHeader className="flex items-center justify-between">
+            <CardHeader className="flex justify-between">
               <CardTitle>Total Products</CardTitle>
-              <Package className="size-4 text-muted-foreground" />
+              <Package className="size-4" />
             </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">{products.length}</div>
-            </CardContent>
+            <CardContent>{products.length}</CardContent>
           </Card>
 
-          {/* Orders */}
           <Card>
-            <CardHeader className="flex items-center justify-between">
+            <CardHeader className="flex justify-between">
               <CardTitle>Total Orders</CardTitle>
-              <ShoppingCart className="size-4 text-muted-foreground" />
+              <ShoppingCart className="size-4" />
             </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">{totalOrders}</div>
-            </CardContent>
+            <CardContent>{totalOrders}</CardContent>
           </Card>
 
-          {/* Pending Orders */}
           <Card>
-            <CardHeader className="flex items-center justify-between">
+            <CardHeader className="flex justify-between">
               <CardTitle>Pending Orders</CardTitle>
-              <TrendingUp className="size-4 text-muted-foreground" />
+              <TrendingUp className="size-4" />
             </CardHeader>
-            <CardContent>
-              <div className="text-gray-900 dark:text-white">{pendingOrders}</div>
-            </CardContent>
+            <CardContent>{pendingOrders}</CardContent>
           </Card>
+
         </div>
 
-        {/* Products Tab */}
+        {/* ✅ SALES GRAPH */}
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between">
+              <div>
+                <CardTitle>Sales Analytics</CardTitle>
+                <CardDescription>Day / Month / Year</CardDescription>
+              </div>
+
+              <Tabs value={salesPeriod} onValueChange={setSalesPeriod}>
+                <TabsList>
+                  <TabsTrigger value="daily">Daily</TabsTrigger>
+                  <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                  <TabsTrigger value="yearly">Yearly</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </CardHeader>
+
+          <CardContent>
+            <SalesChart orders={orders} period={salesPeriod} />
+          </CardContent>
+        </Card>
+
+        {/* ✅ PRODUCT & ORDER TABS */}
         <Tabs defaultValue="products">
           <TabsList>
-            <TabsTrigger value="products">My Products</TabsTrigger>
+            <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="products" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-gray-900 dark:text-white">Product Catalog</h2>
-              <Button onClick={() => { setEditProduct(null); setShowAddProduct(true); }}>
-                <Package className="size-4 mr-2" /> Add New Product
-              </Button>
-            </div>
-
-            <ProductList products={products} onUpdate={handleProductAdded} showActions onEdit={(p) => { setEditProduct(p); setShowAddProduct(true); }} />
+          <TabsContent value="products">
+            <Button onClick={() => setShowAddProduct(true)}>Add Product</Button>
+            <ProductList
+              products={products}
+              showActions
+              onEdit={(p) => { setEditProduct(p); setShowAddProduct(true); }}
+              onUpdate={handleProductAdded}
+            />
           </TabsContent>
 
-          <TabsContent value="orders" className="space-y-4">
-            <h2 className="text-gray-900 dark:text-white">Customer Orders</h2>
-            <OrdersTable orders={orders} isArtisan />
+          <TabsContent value="orders">
+            <OrdersTable orders={orders} />
           </TabsContent>
         </Tabs>
+
       </div>
 
+      {/* ✅ ADD DIALOG */}
       <AddProductDialog
         open={showAddProduct}
         initialProduct={editProduct}
         onClose={() => { setShowAddProduct(false); setEditProduct(null); }}
         onProductAdded={handleProductAdded}
       />
+
     </DashboardLayout>
   );
 }

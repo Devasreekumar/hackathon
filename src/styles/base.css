@@ -1,5 +1,5 @@
-﻿/* ============================================
-   1ï¸âƒ£ GLOBAL STYLES & TYPOGRAPHY
+/* ============================================
+   1️⃣ GLOBAL STYLES & TYPOGRAPHY
    ============================================ */
 
 :root {
@@ -98,6 +98,33 @@
   --z-tooltip: 1060;
 }
 
+:root {
+  /* Light Mode - Component Colors */
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f3f4f6;
+  --color-bg-tertiary: #e5e7eb;
+  --color-text: #111827;
+  --color-text-secondary: #6b7280;
+  --color-border: #e5e7eb;
+}
+
+html.dark {
+  /* Dark Mode - Grayscale Colors */
+  --gray-50: #0f172a;
+  --gray-100: #1e293b;
+  --gray-200: #334155;
+  --gray-300: #475569;
+  --gray-900: #f1f5f9;
+  
+  /* Dark Mode - Component Colors */
+  --color-bg: #1e293b;
+  --color-bg-secondary: #0f172a;
+  --color-bg-tertiary: #334155;
+  --color-text: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-border: #334155;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -109,14 +136,10 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color-scheme: light;
-  background-color: var(--gray-50);
-  color: var(--gray-900);
 }
 
 html.dark {
   color-scheme: dark;
-  background-color: var(--dark-bg);
-  color: var(--dark-text);
 }
 
 body {
@@ -126,15 +149,16 @@ body {
   line-height: var(--line-height-normal);
   color: var(--gray-900);
   background-color: var(--gray-50);
+  transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
 }
 
-html.dark {
-  color: var(--dark-text);
-  background-color: var(--dark-bg);
+html.dark body {
+  color: #f1f5f9;
+  background-color: #0f172a;
 }
 
 /* ============================================
-   2ï¸âƒ£ TYPOGRAPHY
+   2️⃣ TYPOGRAPHY
    ============================================ */
 
 h1, h2, h3, h4, h5, h6 {
@@ -203,26 +227,7 @@ html.dark pre {
 }
 
 /* ============================================
-   GLOBAL THEME TRANSITIONS (Google-like)
-   ============================================ */
-
-/* Smooth theme transitions - ONLY for specific properties to avoid issues */
-body,
-body * {
-  transition: background-color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-              color 300ms cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 300ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Exclude transitions for animations and transforms */
-body svg,
-body img,
-body video {
-  transition: none;
-}
-
-/* ============================================
-   3ï¸âƒ£ LAYOUT SYSTEM
+   3️⃣ LAYOUT SYSTEM
    ============================================ */
 
 /* Container */
@@ -400,7 +405,7 @@ body video {
 .mb-lg { margin-bottom: var(--spacing-lg); }
 
 /* ============================================
-   4ï¸âƒ£ REUSABLE COMPONENTS
+   4️⃣ REUSABLE COMPONENTS
    ============================================ */
 
 /* Buttons */
@@ -701,7 +706,7 @@ html.dark .table tbody tr:hover {
 }
 
 /* ============================================
-   5ï¸âƒ£ DARK MODE
+   5️⃣ DARK MODE
    ============================================ */
 
 .dark {
@@ -709,7 +714,7 @@ html.dark .table tbody tr:hover {
 }
 
 /* ============================================
-   6ï¸âƒ£ RESPONSIVENESS
+   6️⃣ RESPONSIVENESS
    ============================================ */
 
 @media (max-width: 768px) {
@@ -755,7 +760,7 @@ html.dark .table tbody tr:hover {
 }
 
 /* ============================================
-   7ï¸âƒ£ USER FEEDBACK & INTERACTIONS
+   7️⃣ USER FEEDBACK & INTERACTIONS
    ============================================ */
 
 /* Hover Effects */
@@ -1032,6 +1037,7 @@ html.dark .text-muted {
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1039,6 +1045,7 @@ html.dark .text-muted {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1046,6 +1053,7 @@ html.dark .text-muted {
 .line-clamp-3 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

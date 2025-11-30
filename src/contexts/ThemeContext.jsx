@@ -19,8 +19,10 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     try {
-      // Apply or remove the dark class on the root element
-      document.documentElement.classList.toggle('dark', theme === 'dark');
+      // Apply or remove the dark class on the root element AND body for better CSS selector compatibility
+      const isDark = theme === 'dark';
+      document.documentElement.classList.toggle('dark', isDark);
+      document.body.classList.toggle('dark', isDark);
       localStorage.setItem('theme', theme);
     } catch (e) {
       // ignore
