@@ -9,7 +9,6 @@ import { Input } from './ui/input';
 import { Alert, AlertDescription } from './ui/alert';
 import { Users, Package, ShoppingCart, AlertTriangle, Search, Ban, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import api from '../utils/api';
 import { useLocale } from '../contexts/LocaleContext';
 
 export function AdminDashboard() {
@@ -36,15 +35,10 @@ export function AdminDashboard() {
 
   const loadData = () => {
     setUsers(safeParse('users'));
-    // load products from backend
-    api.fetchProducts().then((data) => {
-      const normalized = (data || []).map(p => ({ ...(p||{}), id: p.id || p._id }));
-      setProducts(normalized);
-    }).catch((err) => {
-      console.error('Failed to fetch products from backend', err);
-      toast.error('Failed to load products from server');
-      setProducts([]);
-    });
+    // Load products from localStorage
+    const allProducts = safeParse('products');
+    const normalized = (allProducts || []).map(p => ({ ...(p||{}), id: p.id || p._id }));
+    setProducts(normalized);
     setOrders(safeParse('orders'));
     setExhibitions(safeParse('exhibitions'));
   };

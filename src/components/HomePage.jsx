@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { ImageWithFallback } from './fix/ImageWithFallback';
 import tribalPattern from '../assets/tribal-pattern.svg';
-import api from '../utils/api';
 
 export function HomePage({ onNavigateToLogin, onNavigateToRegister, onNavigateToExhibitions }) {
   const { theme, toggleTheme } = useTheme();
@@ -33,14 +32,14 @@ export function HomePage({ onNavigateToLogin, onNavigateToRegister, onNavigateTo
 
   useEffect(() => {
     let mounted = true;
-    // Load products from localStorage (app still uses localStorage for products)
+    // Load products from localStorage
     const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
     setProducts(allProducts);
 
-    // Try to fetch exhibitions from backend, but helper falls back to localStorage
-    api.fetchExhibitions().then((data) => {
-      if (!mounted) return;
-      const normalized = (data || []).map((d) => ({ ...(d || {}), id: d.id || d._id }));
+    // Load exhibitions from localStorage
+    const allExhibitions = JSON.parse(localStorage.getItem('exhibitions') || '[]');
+    if (mounted) {
+      const normalized = (allExhibitions || []).map((d) => ({ ...(d || {}), id: d.id || d._id }));
       const sortedExhibitions = normalized.slice().sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
       setExhibitions(sortedExhibitions);
 
@@ -73,9 +72,7 @@ export function HomePage({ onNavigateToLogin, onNavigateToRegister, onNavigateTo
         // No upcoming exhibitions -> reset timer
         setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
       }
-    }).catch((err) => {
-      console.warn('Failed to fetch exhibitions for HomePage', err);
-    });
+    }
 
     return () => { mounted = false; };
   }, []);

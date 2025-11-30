@@ -20,7 +20,6 @@ import {
   SelectValue
 } from "./ui/select";
 import { toast } from "sonner";
-import { createProduct, updateProduct } from "../utils/api";  // 🔥 backend API
 
 export function AddProductDialog({ open, onClose, onProductAdded, initialProduct }) {
   const { user } = useAuth();
@@ -63,7 +62,7 @@ export function AddProductDialog({ open, onClose, onProductAdded, initialProduct
     }
   }, [formData.price, formData.mrp]);
 
-  // 🔥 FINAL FIXED SUBMIT HANDLER
+  // Submit handler - saves to localStorage
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -78,25 +77,46 @@ export function AddProductDialog({ open, onClose, onProductAdded, initialProduct
     const payload = {
       name: formData.name,
       price: Number(formData.price),
+      mrp: Number(formData.mrp),
+      discount: Number(formData.discount),
+      category: formData.category,
       description: formData.description,
-      image: formData.imageUrl,
+      imageUrl: formData.imageUrl,
+      artisanName: user?.name || 'Artisan',
     };
 
     try {
+      const allProducts = JSON.parse(localStorage.getItem("products") || "[]");
+      
       if (initialProduct && (initialProduct.id || initialProduct._id)) {
+        // Update existing product
         const id = initialProduct.id || initialProduct._id;
-        await updateProduct(id, payload);
-        toast.success("Product updated successfully!");
+        const idx = allProducts.findIndex((p) => p.id === id || p._id === id);
+        if (idx !== -1) {
+          allProducts[idx] = { ...allProducts[idx], ...payload, updatedAt: new Date().toISOString() };
+          localStorage.setItem("products", JSON.stringify(allProducts));
+          toast.success("Product updated successfully!");
+        } else {
+          throw new Error("Product not found");
+        }
       } else {
-        await createProduct(payload); // 🔥 Save to backend (MongoDB)
+        // Add new product
+        const newProduct = {
+          id: Date.now().toString(),
+          ...payload,
+          createdAt: new Date().toISOString(),
+        };
+        allProducts.push(newProduct);
+        localStorage.setItem("products", JSON.stringify(allProducts));
         toast.success("Product added successfully!");
       }
-      onProductAdded && onProductAdded(); // refresh Artisan dashboard
+      
+      onProductAdded && onProductAdded(); // refresh dashboard
       onClose();
       setFormData(emptyForm);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to save product — check backend connection");
+      toast.error("Failed to save product");
     }
   };
 

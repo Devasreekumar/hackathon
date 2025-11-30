@@ -9,7 +9,6 @@ import { SalesChart } from "./SalesChart";
 import { OrdersTable } from "./OrdersTable";
 import { Package, DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
-import { fetchProducts } from "../utils/api"; // 🔥 Backend API
 
 export function ArtisanDashboard() {
   const { user } = useAuth();
@@ -19,14 +18,14 @@ export function ArtisanDashboard() {
   const [orders, setOrders] = useState([]);
   const [salesPeriod, setSalesPeriod] = useState("daily");
 
-  // 🔥 Load artisan products from backend
-  const loadProducts = async () => {
+  // Load artisan products from localStorage
+  const loadProducts = () => {
     try {
-      const data = await fetchProducts();
-      const myProducts = data; // if each product belongs to logged artisan, filter later
-      setProducts(myProducts);
-    } catch {
-      console.error("Failed to load products");
+      const allProducts = JSON.parse(localStorage.getItem("products") || "[]");
+      setProducts(allProducts);
+    } catch (err) {
+      console.error("Failed to load products:", err);
+      setProducts([]);
     }
   };
 

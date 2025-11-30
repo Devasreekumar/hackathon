@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0%" stop-color="#ffedd5"/>
+      <stop offset="100%" stop-color="#fecdd3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#g)"/>
+  <g fill-opacity="0.08" fill="#000">
+    <circle cx="200" cy="150" r="120" />
+    <circle cx="1000" cy="600" r="180" />
+  </g>
+  <text x="60" y="120" font-family="Playfair Display, serif" font-size="48" fill="#7c2d12">Tribal Heritage</text>
+  <text x="60" y="180" font-family="Inter, system-ui, sans-serif" font-size="20" fill="#4b5563">Handcrafted pieces from skilled artisans</text>
+</svg>

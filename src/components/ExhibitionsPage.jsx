@@ -6,7 +6,6 @@ import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { MapPin, Calendar as CalendarIcon, Clock } from 'lucide-react';
 import { toast } from 'sonner';
-import api from '../utils/api';
 
 export default function ExhibitionsPage({ onBack }) {
   const location = useLocation();
@@ -16,33 +15,49 @@ export default function ExhibitionsPage({ onBack }) {
 
   useEffect(() => {
     let mounted = true;
-    api.fetchExhibitions().then((data) => {
-      if (!mounted) return;
-      // normalize id fields to prefer _id from backend
-      const normalized = (data || []).map((d) => ({ ...(d || {}), id: d.id || d._id }));
-      const sorted = normalized.slice().sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-      setExhibitions(sorted);
-      // if navigation requested opening a specific exhibition, open it after load
-      const requestedId = location?.state?.openExhibitionId || (location?.hash ? location.hash.replace('#', '') : null);
-      if (requestedId) {
-        const found = sorted.find((s) => String(s.id) === String(requestedId));
-        if (found) {
-          setSelected(found);
-          setDialogOpen(true);
+    try {
+      // Load exhibitions from localStorage
+      const allExhibitions = JSON.parse(localStorage.getItem('exhibitions') || '[]');
+      if (mounted) {
+        const normalized = (allExhibitions || []).map((d) => ({ ...(d || {}), id: d.id || d._id }));
+        const sorted = normalized.slice().sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        setExhibitions(sorted);
+        // if navigation requested opening a specific exhibition, open it after load
+        const requestedId = location?.state?.openExhibitionId || (location?.hash ? location.hash.replace('#', '') : null);
+        if (requestedId) {
+          const found = sorted.find((s) => String(s.id) === String(requestedId));
+          if (found) {
+            setSelected(found);
+            setDialogOpen(true);
+          }
         }
       }
-    }).catch((err) => {
-      console.warn('Error fetching exhibitions', err);
-    });
+    } catch (err) {
+      console.error('Error loading exhibitions:', err);
+    }
     return () => { mounted = false; };
   }, []);
 
   const registerInterest = async (ex) => {
     try {
-      const res = await api.registerInterestApi(ex.id);
-      // update local state visitors count
-      setExhibitions((prev) => prev.map((p) => p.id === ex.id ? { ...p, visitors: res.visitors ?? (p.visitors || 0) + 1 } : p));
-      toast.success('Registered interest successfully');
+      // Update exhibitions in localStorage
+      const allExhibitions = JSON.parse(localStorage.getItem('exhibitions') || '[]');
+      const idx = allExhibitions.findIndex((e) => e.id === ex.id || e._id === ex.id);
+      
+      if (idx !== -1) {
+        allExhibitions[idx].visitors = (allExhibitions[idx].visitors || 0) + 1;
+        allExhibitions[idx].interested = allExhibitions[idx].interested || [];
+        allExhibitions[idx].interested.push({
+          timestamp: new Date().toISOString(),
+        });
+        localStorage.setItem('exhibitions', JSON.stringify(allExhibitions));
+        
+        // Update local state
+        setExhibitions((prev) => prev.map((p) => p.id === ex.id ? { ...p, visitors: allExhibitions[idx].visitors } : p));
+        toast.success('Registered interest successfully');
+      } else {
+        throw new Error('Exhibition not found');
+      }
     } catch (err) {
       console.error(err);
       toast.error(err?.message || 'Failed to register interest');

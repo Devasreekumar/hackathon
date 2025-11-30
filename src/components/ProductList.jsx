@@ -1,36 +1,35 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Heart, ShoppingCart, Eye } from 'lucide-react';
 import { ImageWithFallback } from './fix/ImageWithFallback';
-import { deleteProduct as apiDeleteProduct } from '../utils/api';
+import { useState } from 'react';
 
 export function ProductList({ products, onUpdate, showActions, onAddToCart, onEdit }) {
+  const [wishlist, setWishlist] = useState(new Set());
+
   const handleDelete = async (productId) => {
     try {
-      // Try backend delete first
-      if (apiDeleteProduct) {
-        await apiDeleteProduct(productId);
-        onUpdate && onUpdate();
-        return;
-      }
-    } catch (err) {
-      console.error('Backend delete failed, falling back to localStorage delete', err);
-    }
-
-    // Fallback for legacy localStorage data
-    try {
       const allProducts = JSON.parse(localStorage.getItem('products') || '[]');
-      const filtered = allProducts.filter((p) => p.id !== productId);
+      const filtered = allProducts.filter((p) => p.id !== productId && p._id !== productId);
       localStorage.setItem('products', JSON.stringify(filtered));
       onUpdate && onUpdate();
     } catch (err) {
-      console.error('Failed to delete product locally', err);
+      console.error('Failed to delete product:', err);
     }
   };
 
+  const toggleWishlist = (productId) => {
+    const newWishlist = new Set(wishlist);
+    if (newWishlist.has(productId)) {
+      newWishlist.delete(productId);
+    } else {
+      newWishlist.add(productId);
+    }
+    setWishlist(newWishlist);
+  };
+
   const discount = (product) => {
-    // Only use an explicitly provided discount value (no automatic generation)
     if (product.discount !== undefined && product.discount !== null && product.discount !== '') {
       return Math.round(Number(product.discount) || 0);
     }
@@ -48,74 +47,152 @@ export function ProductList({ products, onUpdate, showActions, onAddToCart, onEd
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="product-grid">
       {products.map((product) => (
-        <Card key={product.id} className="flex flex-col">
-          <CardHeader className="p-0">
-            <div className="aspect-square relative overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-800">
-              <ImageWithFallback
-                src={
-                  product.image || product.imageUrl ||
-                  'https://images.unsplash.com/photo-1762628437902-315a5efb810c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYW5kbWFkZSUyMGNyYWZ0cyUyMGFydGlzYW58ZW58MXx8fHwxNzYzNjU5MTk0fDA&ixlib=rb-4.1.0&q=80&w=1080'
-                }
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-              {discount(product) > 0 && (
-                <Badge className="absolute top-2 right-2 bg-red-500">
-                  {discount(product)}% OFF
-                </Badge>
+        <div key={product.id} className="product-card group">
+          {/* Product Image */}
+          <div className="product-image-container">
+            <ImageWithFallback
+              src={
+                product.image || product.imageUrl ||
+                'https://images.unsplash.com/photo-1762628437902-315a5efb810c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYW5kbWFkZSUyMGNyYWZ0cyUyMGFydGlzYW58ZW58MXx8fHwxNzYzNjU5MTk0fDA&ixlib=rb-4.1.0&q=80&w=1080'
+              }
+              alt={product.name}
+              className="product-image"
+            />
+
+            {/* Badge */}
+            {discount(product) > 0 && (
+              <div className="product-badge">
+                {discount(product)}% OFF
+              </div>
+            )}
+
+            {/* Quick Actions - Amazon Style */}
+            <div className="product-quick-actions">
+              {showActions ? (
+                <>
+                  <button 
+                    className="quick-action-btn"
+                    onClick={() => onEdit && onEdit(product)}
+                    title="Edit"
+                  >
+                    <Edit className="size-3" />
+                    Edit
+                  </button>
+                  <button 
+                    className="quick-action-btn icon-btn"
+                    onClick={() => handleDelete(product.id)}
+                    title="Delete"
+                  >
+                    <Trash2 className="size-3" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button 
+                    className="quick-action-btn"
+                    onClick={() => onAddToCart && onAddToCart(product)}
+                  >
+                    <ShoppingCart className="size-3" />
+                    Cart
+                  </button>
+                  <button 
+                    className="quick-action-btn icon-btn"
+                    onClick={() => toggleWishlist(product.id)}
+                  >
+                    <Heart className={`size-3 ${wishlist.has(product.id) ? 'fill-current' : ''}`} />
+                  </button>
+                </>
               )}
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="flex-1 pt-4">
-            <CardTitle className="line-clamp-1">{product.name}</CardTitle>
-            <CardDescription className="line-clamp-2 mt-2">{product.description}</CardDescription>
+          {/* Product Details */}
+          <div className="product-details">
+            {/* Title */}
+            <h3 className="product-title">{product.name}</h3>
 
-            <div className="mt-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <span className="text-gray-900 dark:text-white">
-                  ₹{Number(product.price || 0).toLocaleString()}
-                </span>
-                {product.mrp > product.price && (
-                  <span className="line-through text-muted-foreground">
-                    ₹{product.mrp.toLocaleString()}
-                  </span>
-                )}
+            {/* Rating */}
+            <div className="product-rating">
+              <div className="product-rating-stars">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <span key={i} className="star">★</span>
+                ))}
               </div>
+              <span className="product-rating-count">(42 reviews)</span>
+            </div>
 
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{product.category}</Badge>
-                {product.artisanName && (
-                  <span className="text-muted-foreground">by {product.artisanName}</span>
+            {/* Pricing */}
+            <div className="product-pricing">
+              <div className="product-price">
+                <span className="price-current">₹{Number(product.price || 0).toLocaleString()}</span>
+                {product.mrp > product.price && (
+                  <>
+                    <span className="price-original">₹{product.mrp.toLocaleString()}</span>
+                    <span className="price-discount">
+                      {discount(product) > 0 ? `${discount(product)}% off` : ''}
+                    </span>
+                  </>
                 )}
               </div>
             </div>
-          </CardContent>
 
-          <CardFooter className="pt-4 gap-2">
+            {/* Seller Info */}
+            <div className="seller-info">
+              by <strong>{product.artisanName || 'Artisan'}</strong>
+            </div>
+
+            {/* Category Badge */}
+            <div className="mb-2">
+              <Badge variant="secondary" className="text-xs">
+                {product.category || 'Uncategorized'}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="product-actions" style={{ padding: '0 12px 12px 12px' }}>
             {showActions ? (
               <>
-                <Button type="button" variant="outline" size="sm" className="flex-1" onClick={() => { console.log('Edit clicked', product); onEdit && onEdit(product); }}>
-                  <Edit className="size-4 mr-2" />
+                <button 
+                  className="product-add-to-cart"
+                  onClick={() => onEdit && onEdit(product)}
+                  style={{ 
+                    background: '#0ea5e9',
+                    marginRight: '8px'
+                  }}
+                >
+                  <Edit className="size-4" />
                   Edit
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
+                </button>
+                <button 
+                  className="product-wishlist-btn"
                   onClick={() => handleDelete(product.id)}
+                  style={{ background: '#ef4444', borderColor: '#ef4444', color: 'white' }}
                 >
                   <Trash2 className="size-4" />
-                </Button>
+                </button>
               </>
             ) : (
-              <Button className="w-full" onClick={() => onAddToCart && onAddToCart(product)}>
-                Add to Cart
-              </Button>
+              <>
+                <button 
+                  className="product-add-to-cart"
+                  onClick={() => onAddToCart && onAddToCart(product)}
+                >
+                  <ShoppingCart className="size-4" />
+                  Add to Cart
+                </button>
+                <button 
+                  className={`product-wishlist-btn ${wishlist.has(product.id) ? 'active' : ''}`}
+                  onClick={() => toggleWishlist(product.id)}
+                >
+                  <Heart className={`size-4 ${wishlist.has(product.id) ? 'fill-current' : ''}`} />
+                </button>
+              </>
             )}
-          </CardFooter>
-        </Card>
+          </div>
+        </div>
       ))}
     </div>
   );

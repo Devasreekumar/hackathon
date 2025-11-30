@@ -60,15 +60,15 @@ function AppContent() {
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-200">
-      <ThemeProvider>
-        <LocaleProvider>
-          <AuthProvider>
+    <ThemeProvider>
+      <LocaleProvider>
+        <AuthProvider>
+          <div className="min-h-screen bg-white dark:bg-gray-950 transition-colors duration-200">
             <AppContent />
             <Toaster />
-          </AuthProvider>
-        </LocaleProvider>
-      </ThemeProvider>
-    </div>
+          </div>
+        </AuthProvider>
+      </LocaleProvider>
+    </ThemeProvider>
   );
 }
